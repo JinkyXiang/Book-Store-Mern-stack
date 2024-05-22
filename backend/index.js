@@ -1,5 +1,5 @@
 // index.js, Initiate the express server
-import express, { request, response } from "express";
+import express from "express";
 import { PORT, mongoDBUrl } from "./config.js"; //import PORT from config.js
 import mongoose from "mongoose"; //import mongoose
 import { Book } from "./models/bookModels.js"; //import Book model
@@ -38,7 +38,7 @@ app.post("/books", async (req, res) => {
     return res.status(201).send(book);
   } catch (error) {
     console.log(error.message);
-    response.status(500).send("Internal server error");
+    res.status(500).send("Internal server error");
   }
 });
 
@@ -55,7 +55,7 @@ app.get("/books", async (req, res) => {
     });
   } catch (error) {
     console.log(error.message);
-    response.status(500).send("Internal server error");
+    res.status(500).send("Internal server error");
   }
 });
 
@@ -72,7 +72,38 @@ app.get("/books/:id", async (req, res) => {
     return res.status(200).send(book);
   } catch (error) {
     console.log(error.message);
-    response.status(500).send("Internal server error");
+    res.status(500).send("Internal server error");
+  }
+});
+
+// router for update a book
+app.put("/books/:id", async (req, res) => {
+  try {
+    if (!req.body.title || !req.body.author || !req.body.publishYear) {
+      return res
+        .status(400)
+        .send("Send all required fields: title, author, publishYear");
+    }
+
+    //get the book id from the request parameters
+    const { id } = req.params;
+
+    // check if the ID is valid
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).send("Invalid book ID");
+    }
+
+    //find the book by id in the database and update it
+    const result = await Book.findByIdAndUpdate(id, req.body);
+
+    if (!result) {
+      return res.status(404).send("Book not found");
+    }
+
+    return res.status(200).send("Book updated successfully");
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).send("Internal server error");
   }
 });
 
