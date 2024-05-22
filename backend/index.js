@@ -16,7 +16,7 @@ app.get("/", (req, res) => {
   return res.status(234).send("Hello World, welcome to MERN stack");
 });
 
-//
+//post request to create a new book
 app.post("/books", async (req, res) => {
   try {
     if (!req.body.title || !req.body.author || !req.body.publishYear) {
@@ -36,6 +36,40 @@ app.post("/books", async (req, res) => {
 
     //return the book object as a response to the client
     return res.status(201).send(book);
+  } catch (error) {
+    console.log(error.message);
+    response.status(500).send("Internal server error");
+  }
+});
+
+// route tp get all books from the database
+app.get("/books", async (req, res) => {
+  try {
+    //get all books from the database
+    const books = await Book.find();
+
+    //return the books as a response to the client with book count and books
+    return res.status(200).send({
+      count: books.length,
+      books,
+    });
+  } catch (error) {
+    console.log(error.message);
+    response.status(500).send("Internal server error");
+  }
+});
+
+// route tp get one book from the database by id
+app.get("/books/:id", async (req, res) => {
+  try {
+    //get the book id from the request parameters
+    const { id } = req.params;
+
+    //find the book by id in the database
+    const book = await Book.findById(id);
+
+    //return the books as a response to the client with book count and books
+    return res.status(200).send(book);
   } catch (error) {
     console.log(error.message);
     response.status(500).send("Internal server error");
